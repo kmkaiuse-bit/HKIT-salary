@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { CalculatedAssignment, RateTableRow, TeacherRow } from "@/types";
 import { INSTALMENT_PATTERN_LABELS, INSTALMENT_PATTERN_DESCRIPTIONS } from "@/types";
 import type { ParsedExcelData } from "@/types";
-import { generateAssignmentsTemplate } from "@/lib/template-generator";
+import { generateAssignmentsTemplate, generateMasterTemplate } from "@/lib/template-generator";
 import ManualForm from "./ManualForm";
 import MasterDataEditor from "./MasterDataEditor";
 
@@ -128,6 +128,19 @@ export default function DashboardPage() {
   }
 
   // ── Download Assignments template ─────────────────────────────────
+  function handleDownloadMasterTemplate() {
+    const buf = generateMasterTemplate(masterData ?? undefined);
+    const blob = new Blob([buf as unknown as BlobPart], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "MasterData_Template.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function handleDownloadTemplate() {
     const buf = generateAssignmentsTemplate(
       masterData?.teachers ?? [],
@@ -241,6 +254,13 @@ export default function DashboardPage() {
                   {showMasterPreview ? "收起" : "預覽"}
                 </button>
               )}
+              <button
+                onClick={handleDownloadMasterTemplate}
+                className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-lg transition"
+                title={masterData ? "下載包含現有數據的模板" : "下載空白模板"}
+              >
+                ⬇ {masterData ? "導出模板" : "下載模板"}
+              </button>
               {masterUploadState === "uploading" && <span className="text-xs text-gray-400">上傳中…</span>}
               {masterUploadState === "error" && <span className="text-xs text-red-500">格式錯誤</span>}
               <label className="cursor-pointer text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded-lg transition">
