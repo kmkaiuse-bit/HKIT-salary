@@ -27,6 +27,7 @@ type GenerateState = "idle" | "generating" | "error";
 export default function DashboardPage() {
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [masterUploadState, setMasterUploadState] = useState<UploadState>("idle");
+  const [showMasterPreview, setShowMasterPreview] = useState(false);
 
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [parseErrors, setParseErrors] = useState<string[]>([]);
@@ -184,54 +185,128 @@ export default function DashboardPage() {
   const grandTotal = results.reduce((s, r) => s + r.totalSalary, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f9fb]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">DAE 薪金自動化系統</h1>
-          <p className="text-xs text-gray-500">DAE Program — Salary Calculation</p>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-900">DAE 薪金系統</span>
+              <span className="ml-2 text-xs text-gray-400 hidden sm:inline">兼職教師薪金自動化</span>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            登出
+          </button>
         </div>
-        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-700 underline">
-          登出
-        </button>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-5">
 
         {/* ── Master Data ───────────────────────────────────────────── */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                費率表 &amp; 老師名單
-                <span className="text-xs font-normal text-gray-400">（每年更新一次）</span>
-              </h2>
-
-              {masterData ? (
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
-                    ✓ 已儲存：{masterData.teachers.length} 位老師 · {masterData.rateTable.length} 個科目
+        <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-2 h-2 rounded-full shrink-0 ${masterData ? "bg-green-500" : "bg-amber-400"}`} />
+              <div>
+                <span className="text-sm font-medium text-gray-800">費率表 &amp; 老師名單</span>
+                <span className="ml-2 text-xs text-gray-400">每年更新一次</span>
+                {masterData ? (
+                  <span className="ml-3 text-xs text-green-700">
+                    {masterData.teachers.length} 位老師 · {masterData.rateTable.length} 個科目 · {masterData.savedAt}
                   </span>
-                  <span className="text-xs text-gray-400">更新於 {masterData.savedAt}</span>
-                </div>
-              ) : (
-                <p className="mt-1 text-sm text-amber-600">尚未上傳，請先上傳含 RateTable + Teachers 的 Excel</p>
-              )}
+                ) : (
+                  <span className="ml-2 text-xs text-amber-600">尚未上傳</span>
+                )}
+              </div>
             </div>
-
             <div className="flex items-center gap-2 shrink-0">
-              {masterUploadState === "uploading" && (
-                <span className="text-sm text-gray-400">上傳中…</span>
+              {masterData && (
+                <button
+                  onClick={() => setShowMasterPreview(v => !v)}
+                  className="text-xs text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
+                >
+                  {showMasterPreview ? "收起" : "預覽"}
+                </button>
               )}
-              {masterUploadState === "error" && (
-                <span className="text-sm text-red-500">上傳失敗，請確認文件含 RateTable + Teachers sheet</span>
-              )}
-              <label className="cursor-pointer text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition">
+              {masterUploadState === "uploading" && <span className="text-xs text-gray-400">上傳中…</span>}
+              {masterUploadState === "error" && <span className="text-xs text-red-500">格式錯誤</span>}
+              <label className="cursor-pointer text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded-lg transition">
                 {masterData ? "重新上傳" : "上傳 Master Data"}
                 <input type="file" accept=".xlsx,.xls" className="hidden" onChange={handleMasterUpload} />
               </label>
             </div>
           </div>
+
+          {/* Preview tables */}
+          {masterData && showMasterPreview && (
+            <div className="border-t border-gray-100 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+              {/* Teachers */}
+              <div className="p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">老師名單</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-100">
+                        <th className="pb-1.5 text-left font-medium">顯示名稱</th>
+                        <th className="pb-1.5 text-left font-medium">全名</th>
+                        <th className="pb-1.5 text-left font-medium">類型</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {masterData.teachers.map((t, i) => (
+                        <tr key={i} className="text-gray-700">
+                          <td className="py-1.5 pr-3">{t.displayName}</td>
+                          <td className="py-1.5 pr-3 text-gray-500">{t.fullName}</td>
+                          <td className="py-1.5">
+                            <span className={`px-1.5 py-0.5 rounded text-xs ${t.employmentType === "FT" ? "bg-purple-50 text-purple-600" : "bg-gray-100 text-gray-500"}`}>
+                              {t.employmentType}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Rate table */}
+              <div className="p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">科目費率</p>
+                <div className="overflow-x-auto max-h-48 overflow-y-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="text-gray-400 border-b border-gray-100">
+                        <th className="pb-1.5 text-left font-medium">代碼</th>
+                        <th className="pb-1.5 text-left font-medium">科目</th>
+                        <th className="pb-1.5 text-right font-medium">時薪</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {masterData.rateTable.map((r, i) => (
+                        <tr key={i} className="text-gray-700">
+                          <td className="py-1.5 pr-3 font-mono text-blue-700">{r.subjectCode}</td>
+                          <td className="py-1.5 pr-3 text-gray-500">{r.subjectName}</td>
+                          <td className="py-1.5 text-right font-medium">HK${r.hourlyRate.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ── Step 1: Input tabs ───────────────────────────────────── */}
@@ -508,40 +583,59 @@ export default function DashboardPage() {
 
         {/* ── Step 3: Generate ──────────────────────────────────────── */}
         {results.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-1">Step 3 — 生成輸出</h2>
-            <p className="text-sm text-gray-500 mb-6">
-              學期代號：
-              <input
-                value={term}
-                onChange={(e) => setTerm(e.target.value)}
-                className="ml-2 border border-gray-300 rounded px-2 py-0.5 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </p>
+          <section className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <h2 className="text-base font-semibold text-gray-900">Step 3 — 生成輸出</h2>
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-xs text-gray-500">學期</span>
+                <input
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
 
-            <div className="flex gap-4 flex-wrap">
+            <div className="grid sm:grid-cols-2 gap-3">
               <button
                 onClick={() => handleGenerate("budget")}
                 disabled={generateState === "generating"}
-                className="bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition disabled:opacity-50"
+                className="flex items-center gap-3 px-5 py-3.5 rounded-xl border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 text-left transition disabled:opacity-50 group"
               >
-                📊 生成預算彙總表（Draft 用）
+                <span className="text-2xl">📊</span>
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">生成預算彙總表</p>
+                  <p className="text-xs text-amber-700 mt-0.5">Draft 模式，提交校長審批用</p>
+                </div>
               </button>
+
               <button
                 onClick={() => handleGenerate("full")}
                 disabled={generateState === "generating" || hasErrors || finalCount === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition disabled:opacity-50"
+                className="flex items-center gap-3 px-5 py-3.5 rounded-xl border-2 border-green-200 bg-green-50 hover:bg-green-100 text-left transition disabled:opacity-50 disabled:cursor-not-allowed group"
                 title={hasErrors ? "請先修正所有驗證錯誤" : finalCount === 0 ? "請將至少一行狀態設為 FINAL" : ""}
               >
-                📦 生成全部輸出（薪金表 + 合同 + 排程）
+                <span className="text-2xl">📦</span>
+                <div>
+                  <p className="text-sm font-semibold text-green-900">生成全部輸出</p>
+                  <p className="text-xs text-green-700 mt-0.5">薪金表 + 個人合同 + 付款排程（zip）</p>
+                </div>
               </button>
             </div>
 
-            {generateState === "generating" && <p className="mt-4 text-sm text-gray-500">生成中，請稍候…</p>}
+            {generateState === "generating" && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                生成中，請稍候…
+              </div>
+            )}
 
             {generateState === "error" && generateError.length > 0 && (
-              <div className="mt-4 bg-red-50 rounded-lg p-4">
-                <p className="text-sm font-medium text-red-700 mb-2">驗證失敗，請修正以下問題：</p>
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-red-700 mb-2">驗證失敗，請修正以下問題：</p>
                 <ul className="text-sm text-red-600 space-y-1 list-disc list-inside">
                   {generateError.map((e, i) => <li key={i}>{e}</li>)}
                 </ul>
@@ -549,16 +643,16 @@ export default function DashboardPage() {
             )}
 
             {hasErrors && (
-              <p className="mt-3 text-sm text-red-600">
-                ⚠ 部分行有驗證錯誤（紅色行），請修正後重新上傳再生成完整輸出。
+              <p className="mt-3 text-sm text-red-600 flex items-center gap-1.5">
+                <span>⚠</span> 部分行有驗證錯誤，請修正後重新上傳再生成完整輸出。
               </p>
             )}
           </section>
         )}
 
         {/* ── Instalment Pattern Reference ─────────────────────────── */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">分期模式說明</h2>
+        <section className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">分期模式說明</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {(Object.entries(INSTALMENT_PATTERN_LABELS) as [keyof typeof INSTALMENT_PATTERN_LABELS, string][]).map(
               ([code, label]) => (
