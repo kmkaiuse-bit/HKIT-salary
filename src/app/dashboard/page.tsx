@@ -91,8 +91,11 @@ export default function DashboardPage() {
     window.location.href = "/login";
   }
 
+  const [showBudget, setShowBudget] = useState(false);
+
   const hasErrors = results.some((r) => r.validationErrors.length > 0);
   const finalCount = results.filter((r) => r.assignment.status === "FINAL").length;
+  const grandTotal = results.reduce((s, r) => s + r.totalSalary, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -233,6 +236,108 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
+          </section>
+        )}
+
+        {/* Budget Preview */}
+        {results.length > 0 && (
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">預算預覽</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  總預算：
+                  <span className="font-semibold text-gray-800 ml-1">
+                    HK${grandTotal.toLocaleString()}
+                  </span>
+                  <span className="ml-2 text-gray-400">（{results.length} 行）</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setShowBudget((v) => !v)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                {showBudget ? "收起" : "展開明細"}
+              </button>
+            </div>
+
+            {showBudget && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-amber-50 text-gray-600 text-left text-xs">
+                      <th className="px-3 py-2 font-medium">科目代碼</th>
+                      <th className="px-3 py-2 font-medium">科目名稱</th>
+                      <th className="px-3 py-2 font-medium">類別</th>
+                      <th className="px-3 py-2 font-medium">老師</th>
+                      <th className="px-3 py-2 font-medium">FT/PT</th>
+                      <th className="px-3 py-2 font-medium text-right">時數</th>
+                      <th className="px-3 py-2 font-medium text-right">時薪</th>
+                      <th className="px-3 py-2 font-medium text-right">預算</th>
+                      <th className="px-3 py-2 font-medium text-right">獎勵金</th>
+                      <th className="px-3 py-2 font-medium text-right">總薪金</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {results.map((r, i) => {
+                      const hours = r.assignment.isCombined
+                        ? (r.assignment.comTeachingHours ?? 0)
+                        : r.assignment.teachingHours;
+                      const budget = hours * r.hourlyRate;
+                      return (
+                        <tr key={i} className={i % 2 === 1 ? "bg-gray-50" : ""}>
+                          <td className="px-3 py-2 font-mono text-xs text-blue-700">
+                            {r.assignment.subjectCode}
+                          </td>
+                          <td className="px-3 py-2 text-gray-700">{r.rateRow.subjectName || "—"}</td>
+                          <td className="px-3 py-2 text-gray-500 text-xs">{r.rateRow.category || "—"}</td>
+                          <td className="px-3 py-2">{r.teacher.displayName}</td>
+                          <td className="px-3 py-2">
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                              r.teacher.employmentType === "FT"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}>
+                              {r.teacher.employmentType}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right">{hours}</td>
+                          <td className="px-3 py-2 text-right">
+                            {r.hourlyRate > 0 ? `HK$${r.hourlyRate.toFixed(0)}` : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            HK${budget.toLocaleString()}
+                          </td>
+                          <td className="px-3 py-2 text-right text-gray-500">
+                            {r.assignment.incentive > 0 ? `HK$${r.assignment.incentive.toLocaleString()}` : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium">
+                            HK${r.totalSalary.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-amber-50 font-semibold text-gray-800 border-t-2 border-amber-200">
+                      <td colSpan={7} className="px-3 py-2 text-right text-sm">合計</td>
+                      <td className="px-3 py-2 text-right text-sm">
+                        HK${results.reduce((s, r) => {
+                          const h = r.assignment.isCombined ? (r.assignment.comTeachingHours ?? 0) : r.assignment.teachingHours;
+                          return s + h * r.hourlyRate;
+                        }, 0).toLocaleString()}
+                      </td>
+                      <td className="px-3 py-2 text-right text-sm">
+                        HK${results.reduce((s, r) => s + r.assignment.incentive, 0).toLocaleString()}
+                      </td>
+                      <td className="px-3 py-2 text-right text-sm">
+                        HK${grandTotal.toLocaleString()}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
           </section>
         )}
 
