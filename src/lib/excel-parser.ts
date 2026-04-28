@@ -16,10 +16,12 @@ const VALID_PATTERNS = new Set<InstalmentPattern>([
 export function parseExcelBuffer(buffer: ArrayBuffer): ParsedExcelData {
   const workbook = XLSX.read(buffer, { type: "array" });
   const errors: string[] = [];
+  const sheetNames = workbook.SheetNames;
 
-  const rateTable = parseRateTable(workbook, errors);
-  const teachers = parseTeachers(workbook, errors);
-  const assignments = parseAssignments(workbook, errors);
+  // Silently skip missing sheets — caller decides if master data is needed
+  const rateTable = sheetNames.includes("RateTable") ? parseRateTable(workbook, errors) : [];
+  const teachers = sheetNames.includes("Teachers") ? parseTeachers(workbook, errors) : [];
+  const assignments = sheetNames.includes("Assignments") ? parseAssignments(workbook, errors) : [];
 
   return { rateTable, teachers, assignments, errors };
 }
