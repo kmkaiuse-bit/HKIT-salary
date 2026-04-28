@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const [generateError, setGenerateError] = useState<string[]>([]);
   const [term, setTerm] = useState("T2025C");
   const [showBudget, setShowBudget] = useState(false);
-  const [activeTab, setActiveTab] = useState<"upload" | "manual">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "manual">("manual");
 
   // Load master data from localStorage on mount
   useEffect(() => {
