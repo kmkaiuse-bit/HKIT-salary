@@ -65,7 +65,7 @@ export default function MasterDataEditor({ masterData, onSave }: Props) {
     <div className="border-t border-gray-100">
       {/* Save bar */}
       {dirty && (
-        <div className="px-5 py-2.5 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+        <div className="px-4 sm:px-5 py-2.5 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
           <span className="text-xs text-blue-700">有未儲存的修改</span>
           <button
             onClick={handleSave}

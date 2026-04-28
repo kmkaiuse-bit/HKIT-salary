@@ -108,7 +108,7 @@ export default function ManualForm({ masterData, term, onTermChange, onResults }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {!masterData && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700">
           請先上傳 Master Data（費率表 + 老師名單），才能使用手動填寫功能。
@@ -156,7 +156,7 @@ export default function ManualForm({ masterData, term, onTermChange, onResults }
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {/* Teacher */}
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">老師</label>
@@ -301,7 +301,7 @@ export default function ManualForm({ masterData, term, onTermChange, onResults }
 
               {/* Combined fields */}
               {row.isCombined && (
-                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-200">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">合并科目時薪</label>
                     <input
@@ -350,7 +350,7 @@ export default function ManualForm({ masterData, term, onTermChange, onResults }
         <button
           onClick={handleCalculate}
           disabled={submitting || !masterData || rows.every((r) => !r.teacherDisplayName)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition disabled:opacity-50"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition disabled:opacity-50"
         >
           {submitting ? "計算中…" : "計算並預覽結果 →"}
         </button>

@@ -203,7 +203,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#f8f9fb]">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -227,26 +227,27 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-5">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-4 sm:space-y-5">
 
         {/* ── Master Data ───────────────────────────────────────────── */}
         <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className={`w-2 h-2 rounded-full shrink-0 ${masterData ? "bg-green-500" : "bg-amber-400"}`} />
-              <div>
+              <div className="min-w-0">
                 <span className="text-sm font-medium text-gray-800">費率表 &amp; 老師名單</span>
-                <span className="ml-2 text-xs text-gray-400">每年更新一次</span>
+                <span className="ml-2 text-xs text-gray-400 hidden sm:inline">每年更新一次</span>
                 {masterData ? (
-                  <span className="ml-3 text-xs text-green-700">
-                    {masterData.teachers.length} 位老師 · {masterData.rateTable.length} 個科目 · {masterData.savedAt}
+                  <span className="block sm:inline sm:ml-3 text-xs text-green-700 truncate">
+                    {masterData.teachers.length} 位老師 · {masterData.rateTable.length} 個科目
+                    <span className="hidden sm:inline"> · {masterData.savedAt}</span>
                   </span>
                 ) : (
                   <span className="ml-2 text-xs text-amber-600">尚未上傳</span>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
               {masterData && (
                 <button
                   onClick={() => setShowMasterPreview(v => !v)}
@@ -284,23 +285,23 @@ export default function DashboardPage() {
         </section>
 
         {/* ── Step flow ────────────────────────────────────────────── */}
-        <div className="flex items-center gap-0 text-xs">
+        <div className="flex items-center gap-0 text-xs overflow-x-auto pb-0.5 -mx-1 px-1">
           {[
             { n: 1, label: "輸入課程安排", active: true },
             { n: 2, label: "預覽計算結果", active: results.length > 0 },
             { n: 3, label: "生成輸出",     active: results.length > 0 },
           ].map((step, i, arr) => (
-            <div key={step.n} className="flex items-center">
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition ${
+            <div key={step.n} className="flex items-center shrink-0">
+              <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition whitespace-nowrap ${
                 step.active
                   ? "bg-blue-600 text-white"
                   : "bg-white border border-gray-200 text-gray-400"
               }`}>
                 <span className="font-semibold">{step.n}</span>
-                <span className={step.active ? "text-blue-100" : ""}>{step.label}</span>
+                <span className={`${step.active ? "text-blue-100" : ""} hidden xs:inline sm:inline`}>{step.label}</span>
               </div>
               {i < arr.length - 1 && (
-                <div className={`w-8 h-px mx-1 ${results.length > 0 && i === 0 ? "bg-blue-300" : "bg-gray-200"}`} />
+                <div className={`w-6 sm:w-8 h-px mx-1 shrink-0 ${results.length > 0 && i === 0 ? "bg-blue-300" : "bg-gray-200"}`} />
               )}
             </div>
           ))}
@@ -405,17 +406,17 @@ export default function DashboardPage() {
               預覽計算結果
             </h2>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="bg-gray-50 text-gray-600 text-left">
                     <th className="px-3 py-2 font-medium">老師</th>
                     <th className="px-3 py-2 font-medium">科目</th>
-                    <th className="px-3 py-2 font-medium">時數</th>
-                    <th className="px-3 py-2 font-medium">時薪</th>
+                    <th className="px-3 py-2 font-medium hidden sm:table-cell">時數</th>
+                    <th className="px-3 py-2 font-medium hidden sm:table-cell">時薪</th>
                     <th className="px-3 py-2 font-medium">總薪金</th>
                     <th className="px-3 py-2 font-medium">分期安排</th>
-                    <th className="px-3 py-2 font-medium">狀態</th>
+                    <th className="px-3 py-2 font-medium hidden sm:table-cell">狀態</th>
                     <th className="px-3 py-2 font-medium">驗證</th>
                   </tr>
                 </thead>
@@ -438,8 +439,8 @@ export default function DashboardPage() {
                               <span className="ml-1 text-gray-500 text-xs">{r.rateRow.subjectName}</span>
                             )}
                           </td>
-                          <td className="px-3 py-2 align-top">{hours}</td>
-                          <td className="px-3 py-2 align-top">
+                          <td className="px-3 py-2 align-top hidden sm:table-cell">{hours}</td>
+                          <td className="px-3 py-2 align-top hidden sm:table-cell">
                             {r.hourlyRate > 0 ? `HK$${r.hourlyRate.toFixed(0)}` : "—"}
                           </td>
                           <td className="px-3 py-2 align-top font-semibold">
@@ -466,7 +467,7 @@ export default function DashboardPage() {
                               <span className="text-xs text-gray-400">—</span>
                             )}
                           </td>
-                          <td className="px-3 py-2 align-top">
+                          <td className="px-3 py-2 align-top hidden sm:table-cell">
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               r.assignment.status === "FINAL"
                                 ? "bg-green-100 text-green-700"
@@ -520,19 +521,19 @@ export default function DashboardPage() {
             </div>
 
             {showBudget && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+                <table className="w-full text-sm min-w-[560px]">
                   <thead>
                     <tr className="bg-amber-50 text-gray-600 text-left text-xs">
                       <th className="px-3 py-2 font-medium">科目代碼</th>
-                      <th className="px-3 py-2 font-medium">科目名稱</th>
-                      <th className="px-3 py-2 font-medium">類別</th>
+                      <th className="px-3 py-2 font-medium hidden sm:table-cell">科目名稱</th>
+                      <th className="px-3 py-2 font-medium hidden lg:table-cell">類別</th>
                       <th className="px-3 py-2 font-medium">老師</th>
-                      <th className="px-3 py-2 font-medium">FT/PT</th>
+                      <th className="px-3 py-2 font-medium hidden sm:table-cell">FT/PT</th>
                       <th className="px-3 py-2 font-medium text-right">時數</th>
-                      <th className="px-3 py-2 font-medium text-right">時薪</th>
-                      <th className="px-3 py-2 font-medium text-right">預算</th>
-                      <th className="px-3 py-2 font-medium text-right">獎勵金</th>
+                      <th className="px-3 py-2 font-medium text-right hidden sm:table-cell">時薪</th>
+                      <th className="px-3 py-2 font-medium text-right hidden sm:table-cell">預算</th>
+                      <th className="px-3 py-2 font-medium text-right hidden sm:table-cell">獎勵金</th>
                       <th className="px-3 py-2 font-medium text-right">總薪金</th>
                     </tr>
                   </thead>
@@ -543,18 +544,18 @@ export default function DashboardPage() {
                       return (
                         <tr key={i} className={i % 2 === 1 ? "bg-gray-50" : ""}>
                           <td className="px-3 py-2 font-mono text-xs text-blue-700">{r.assignment.subjectCode}</td>
-                          <td className="px-3 py-2 text-gray-700">{r.rateRow.subjectName || "—"}</td>
-                          <td className="px-3 py-2 text-gray-500 text-xs">{r.rateRow.category || "—"}</td>
+                          <td className="px-3 py-2 text-gray-700 hidden sm:table-cell">{r.rateRow.subjectName || "—"}</td>
+                          <td className="px-3 py-2 text-gray-500 text-xs hidden lg:table-cell">{r.rateRow.category || "—"}</td>
                           <td className="px-3 py-2">{r.teacher.displayName}</td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2 hidden sm:table-cell">
                             <span className={`text-xs px-1.5 py-0.5 rounded ${r.teacher.employmentType === "FT" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-600"}`}>
                               {r.teacher.employmentType}
                             </span>
                           </td>
                           <td className="px-3 py-2 text-right">{hours}</td>
-                          <td className="px-3 py-2 text-right">{r.hourlyRate > 0 ? `HK$${r.hourlyRate.toFixed(0)}` : "—"}</td>
-                          <td className="px-3 py-2 text-right">HK${budget.toLocaleString()}</td>
-                          <td className="px-3 py-2 text-right text-gray-500">{r.assignment.incentive > 0 ? `HK$${r.assignment.incentive.toLocaleString()}` : "—"}</td>
+                          <td className="px-3 py-2 text-right hidden sm:table-cell">{r.hourlyRate > 0 ? `HK$${r.hourlyRate.toFixed(0)}` : "—"}</td>
+                          <td className="px-3 py-2 text-right hidden sm:table-cell">HK${budget.toLocaleString()}</td>
+                          <td className="px-3 py-2 text-right text-gray-500 hidden sm:table-cell">{r.assignment.incentive > 0 ? `HK$${r.assignment.incentive.toLocaleString()}` : "—"}</td>
                           <td className="px-3 py-2 text-right font-medium">HK${r.totalSalary.toLocaleString()}</td>
                         </tr>
                       );
@@ -562,7 +563,7 @@ export default function DashboardPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-amber-50 font-semibold text-gray-800 border-t-2 border-amber-200">
-                      <td colSpan={7} className="px-3 py-2 text-right text-sm">合計</td>
+                      <td colSpan={3} className="px-3 py-2 text-right text-sm">合計</td>
                       <td className="px-3 py-2 text-right text-sm">
                         HK${results.reduce((s, r) => { const h = r.assignment.isCombined ? (r.assignment.comTeachingHours ?? 0) : r.assignment.teachingHours; return s + h * r.hourlyRate; }, 0).toLocaleString()}
                       </td>
