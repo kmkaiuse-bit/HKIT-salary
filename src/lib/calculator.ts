@@ -68,6 +68,11 @@ export function calculateAssignment(
   };
 }
 
+// Strip class suffix: "DAE233_A" → "DAE233", "DAE201_B" → "DAE201"
+function baseCode(code: string): string {
+  return code.replace(/_[A-Z]$/i, "");
+}
+
 export function calculateAll(
   assignments: AssignmentRow[],
   teachers: TeacherRow[],
@@ -76,9 +81,13 @@ export function calculateAll(
   const teacherMap = new Map(teachers.map((t) => [t.displayName, t]));
   const rateMap = new Map(rateTable.map((r) => [r.subjectCode, r]));
 
+  function lookupRate(subjectCode: string): RateTableRow | undefined {
+    return rateMap.get(subjectCode) ?? rateMap.get(baseCode(subjectCode));
+  }
+
   return assignments.map((a) => {
     const teacher = teacherMap.get(a.teacherDisplayName);
-    const rateRow = rateMap.get(a.subjectCode);
+    const rateRow = lookupRate(a.subjectCode);
 
     if (!teacher) {
       return {
@@ -100,7 +109,7 @@ export function calculateAll(
         hourlyRate: 0,
         totalSalary: 0,
         instalments: [],
-        validationErrors: [`找不到科目費率：${a.subjectCode}`],
+        validationErrors: [`找不到科目費率：${a.subjectCode}（亦嘗試過 ${baseCode(a.subjectCode)}）`],
       };
     }
 
