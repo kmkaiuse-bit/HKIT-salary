@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [generateError, setGenerateError] = useState<string[]>([]);
   const [term, setTerm] = useState("T2025C");
   const [showBudget, setShowBudget] = useState(false);
+  const [showPatternRef, setShowPatternRef] = useState(false);
   const [activeTab, setActiveTab] = useState<"upload" | "manual">("manual");
 
   // Load master data from localStorage on mount
@@ -211,7 +212,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <span className="text-sm font-semibold text-gray-900">DAE 薪金系統</span>
-              <span className="ml-2 text-xs text-gray-400 hidden sm:inline">兼職教師薪金自動化</span>
+              <span className="ml-2 text-xs text-gray-500 hidden sm:inline">兼職教師薪金自動化</span>
             </div>
           </div>
           <button
@@ -282,8 +283,31 @@ export default function DashboardPage() {
           )}
         </section>
 
+        {/* ── Step flow ────────────────────────────────────────────── */}
+        <div className="flex items-center gap-0 text-xs">
+          {[
+            { n: 1, label: "輸入課程安排", active: true },
+            { n: 2, label: "預覽計算結果", active: results.length > 0 },
+            { n: 3, label: "生成輸出",     active: results.length > 0 },
+          ].map((step, i, arr) => (
+            <div key={step.n} className="flex items-center">
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition ${
+                step.active
+                  ? "bg-blue-600 text-white"
+                  : "bg-white border border-gray-200 text-gray-400"
+              }`}>
+                <span className="font-semibold">{step.n}</span>
+                <span className={step.active ? "text-blue-100" : ""}>{step.label}</span>
+              </div>
+              {i < arr.length - 1 && (
+                <div className={`w-8 h-px mx-1 ${results.length > 0 && i === 0 ? "bg-blue-300" : "bg-gray-200"}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
         {/* ── Step 1: Input tabs ───────────────────────────────────── */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {/* Tab headers */}
           <div className="flex border-b border-gray-100">
             <button
@@ -376,9 +400,9 @@ export default function DashboardPage() {
 
         {/* ── Step 2: Results Table ─────────────────────────────────── */}
         {results.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Step 2 — 預覽計算結果
+          <section className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">
+              預覽計算結果
             </h2>
 
             <div className="overflow-x-auto">
@@ -477,21 +501,21 @@ export default function DashboardPage() {
 
         {/* ── Budget Preview ────────────────────────────────────────── */}
         {results.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <section className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">預算預覽</h2>
+                <h2 className="text-base font-semibold text-gray-900">預算預覽</h2>
                 <p className="text-sm text-gray-500 mt-0.5">
                   總預算：
                   <span className="font-semibold text-gray-800 ml-1">HK${grandTotal.toLocaleString()}</span>
-                  <span className="ml-2 text-gray-400">（{results.length} 行）</span>
+                  <span className="ml-2 text-gray-500">（{results.length} 行）</span>
                 </p>
               </div>
               <button
                 onClick={() => setShowBudget((v) => !v)}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-xs font-medium text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition flex items-center gap-1"
               >
-                {showBudget ? "收起" : "展開明細"}
+                {showBudget ? "▲ 收起" : "▼ 展開明細"}
               </button>
             </div>
 
@@ -624,9 +648,16 @@ export default function DashboardPage() {
         )}
 
         {/* ── Instalment Pattern Reference ─────────────────────────── */}
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">分期模式說明</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <section className="bg-white rounded-xl border border-gray-200">
+          <button
+            onClick={() => setShowPatternRef(v => !v)}
+            className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-gray-50 transition rounded-xl"
+          >
+            <span className="text-sm font-medium text-gray-700">分期模式說明</span>
+            <span className="text-xs text-gray-400">{showPatternRef ? "▲ 收起" : "▼ 展開"}</span>
+          </button>
+          {showPatternRef && (
+          <div className="px-5 pb-5 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-gray-100 pt-4">
             {(Object.entries(INSTALMENT_PATTERN_LABELS) as [keyof typeof INSTALMENT_PATTERN_LABELS, string][]).map(
               ([code, label]) => (
                 <div key={code} className="bg-gray-50 rounded-lg p-3">
@@ -637,6 +668,7 @@ export default function DashboardPage() {
               )
             )}
           </div>
+          )}
         </section>
 
       </main>
