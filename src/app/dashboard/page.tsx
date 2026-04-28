@@ -5,6 +5,7 @@ import type { CalculatedAssignment, RateTableRow, TeacherRow } from "@/types";
 import { INSTALMENT_PATTERN_LABELS, INSTALMENT_PATTERN_DESCRIPTIONS } from "@/types";
 import type { ParsedExcelData } from "@/types";
 import { generateAssignmentsTemplate } from "@/lib/template-generator";
+import ManualForm from "./ManualForm";
 
 const MASTER_STORAGE_KEY = "dae_master_data";
 
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [generateError, setGenerateError] = useState<string[]>([]);
   const [term, setTerm] = useState("T2025C");
   const [showBudget, setShowBudget] = useState(false);
+  const [activeTab, setActiveTab] = useState<"upload" | "manual">("upload");
 
   // Load master data from localStorage on mount
   useEffect(() => {
@@ -232,55 +234,96 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* ── Step 1: Assignments upload ────────────────────────────── */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">
-            Step 1 — 上傳本學期課程安排
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            只需填 <code className="bg-gray-100 px-1 rounded">Assignments</code> sheet（時薪由系統從費率表自動查找）
-          </p>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            {masterData && (
-              <button
-                onClick={handleDownloadTemplate}
-                className="text-sm border border-blue-200 text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg transition"
-              >
-                ⬇ 下載空白模板（含老師 &amp; 科目參考）
-              </button>
-            )}
-
-            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-              上傳 Assignments Excel
-              <input type="file" accept=".xlsx,.xls" className="hidden" onChange={handleAssignmentsUpload} />
-            </label>
-
-            {uploadState === "uploading" && (
-              <span className="text-sm text-gray-400">解析中…</span>
-            )}
-            {uploadState === "done" && uploadStats && (
-              <span className="text-sm text-green-600">
-                ✓ {uploadStats.assignmentCount} 行課程安排，
-                使用 {uploadStats.teacherCount} 位老師 · {uploadStats.subjectCount} 個科目費率
-              </span>
-            )}
+        {/* ── Step 1: Input tabs ───────────────────────────────────── */}
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Tab headers */}
+          <div className="flex border-b border-gray-100">
+            <button
+              onClick={() => setActiveTab("upload")}
+              className={`flex-1 py-3.5 text-sm font-medium transition ${
+                activeTab === "upload"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-white"
+                  : "text-gray-500 hover:text-gray-700 bg-gray-50"
+              }`}
+            >
+              📂 上傳 Excel
+            </button>
+            <button
+              onClick={() => setActiveTab("manual")}
+              className={`flex-1 py-3.5 text-sm font-medium transition ${
+                activeTab === "manual"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-white"
+                  : "text-gray-500 hover:text-gray-700 bg-gray-50"
+              }`}
+            >
+              ✏️ 手動填寫
+            </button>
           </div>
 
-          {!masterData && uploadState === "idle" && (
-            <p className="mt-3 text-xs text-amber-600">
-              ⚠ 尚未儲存 Master Data。如上傳完整 Excel（含 RateTable + Teachers + Assignments），系統會自動儲存。
-            </p>
-          )}
+          <div className="p-6">
+            {activeTab === "upload" ? (
+              <>
+                <h2 className="text-base font-semibold text-gray-800 mb-1">
+                  上傳本學期課程安排
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  只需填 <code className="bg-gray-100 px-1 rounded">Assignments</code> sheet（時薪由系統從費率表自動查找）
+                </p>
 
-          {parseErrors.length > 0 && (
-            <div className="mt-4 bg-red-50 rounded-lg p-4">
-              <p className="text-sm font-medium text-red-700 mb-2">解析警告 / 錯誤：</p>
-              <ul className="text-sm text-red-600 space-y-1 list-disc list-inside">
-                {parseErrors.map((e, i) => <li key={i}>{e}</li>)}
-              </ul>
-            </div>
-          )}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {masterData && (
+                    <button
+                      onClick={handleDownloadTemplate}
+                      className="text-sm border border-blue-200 text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg transition"
+                    >
+                      ⬇ 下載空白模板
+                    </button>
+                  )}
+                  <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                    上傳 Assignments Excel
+                    <input type="file" accept=".xlsx,.xls" className="hidden" onChange={handleAssignmentsUpload} />
+                  </label>
+                  {uploadState === "uploading" && <span className="text-sm text-gray-400">解析中…</span>}
+                  {uploadState === "done" && uploadStats && (
+                    <span className="text-sm text-green-600">
+                      ✓ {uploadStats.assignmentCount} 行，{uploadStats.teacherCount} 位老師 · {uploadStats.subjectCount} 個科目費率
+                    </span>
+                  )}
+                </div>
+
+                {!masterData && uploadState === "idle" && (
+                  <p className="mt-3 text-xs text-amber-600">
+                    ⚠ 尚未儲存 Master Data。上傳含 RateTable + Teachers + Assignments 的完整 Excel，系統會自動儲存。
+                  </p>
+                )}
+
+                {parseErrors.length > 0 && (
+                  <div className="mt-4 bg-red-50 rounded-lg p-4">
+                    <p className="text-sm font-medium text-red-700 mb-2">解析警告 / 錯誤：</p>
+                    <ul className="text-sm text-red-600 space-y-1 list-disc list-inside">
+                      {parseErrors.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <ManualForm
+                masterData={masterData}
+                term={term}
+                onTermChange={setTerm}
+                onResults={(r, fd) => {
+                  setResults(r);
+                  setParsed(fd);
+                  setUploadStats({
+                    teacherCount: fd.teachers.length,
+                    subjectCount: fd.rateTable.length,
+                    assignmentCount: fd.assignments.length,
+                  });
+                  if (r[0]?.assignment?.term) setTerm(r[0].assignment.term);
+                }}
+              />
+            )}
+          </div>
         </section>
 
         {/* ── Step 2: Results Table ─────────────────────────────────── */}
