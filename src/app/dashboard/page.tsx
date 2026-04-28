@@ -6,6 +6,7 @@ import { INSTALMENT_PATTERN_LABELS, INSTALMENT_PATTERN_DESCRIPTIONS } from "@/ty
 import type { ParsedExcelData } from "@/types";
 import { generateAssignmentsTemplate } from "@/lib/template-generator";
 import ManualForm from "./ManualForm";
+import MasterDataEditor from "./MasterDataEditor";
 
 const MASTER_STORAGE_KEY = "dae_master_data";
 
@@ -249,63 +250,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Preview tables */}
+          {/* Editable preview */}
           {masterData && showMasterPreview && (
-            <div className="border-t border-gray-100 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-              {/* Teachers */}
-              <div className="p-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">老師名單</p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-gray-400 border-b border-gray-100">
-                        <th className="pb-1.5 text-left font-medium">顯示名稱</th>
-                        <th className="pb-1.5 text-left font-medium">全名</th>
-                        <th className="pb-1.5 text-left font-medium">類型</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {masterData.teachers.map((t, i) => (
-                        <tr key={i} className="text-gray-700">
-                          <td className="py-1.5 pr-3">{t.displayName}</td>
-                          <td className="py-1.5 pr-3 text-gray-500">{t.fullName}</td>
-                          <td className="py-1.5">
-                            <span className={`px-1.5 py-0.5 rounded text-xs ${t.employmentType === "FT" ? "bg-purple-50 text-purple-600" : "bg-gray-100 text-gray-500"}`}>
-                              {t.employmentType}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Rate table */}
-              <div className="p-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">科目費率</p>
-                <div className="overflow-x-auto max-h-48 overflow-y-auto">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 bg-white">
-                      <tr className="text-gray-400 border-b border-gray-100">
-                        <th className="pb-1.5 text-left font-medium">代碼</th>
-                        <th className="pb-1.5 text-left font-medium">科目</th>
-                        <th className="pb-1.5 text-right font-medium">時薪</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {masterData.rateTable.map((r, i) => (
-                        <tr key={i} className="text-gray-700">
-                          <td className="py-1.5 pr-3 font-mono text-blue-700">{r.subjectCode}</td>
-                          <td className="py-1.5 pr-3 text-gray-500">{r.subjectName}</td>
-                          <td className="py-1.5 text-right font-medium">HK${r.hourlyRate.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <MasterDataEditor
+              masterData={masterData}
+              onSave={(updated) => {
+                localStorage.setItem(MASTER_STORAGE_KEY, JSON.stringify(updated));
+                setMasterData(updated);
+              }}
+            />
           )}
         </section>
 
