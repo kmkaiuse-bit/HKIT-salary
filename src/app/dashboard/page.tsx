@@ -172,65 +172,91 @@ export default function DashboardPage() {
                     <th className="px-3 py-2 font-medium">時數</th>
                     <th className="px-3 py-2 font-medium">時薪</th>
                     <th className="px-3 py-2 font-medium">總薪金</th>
-                    <th className="px-3 py-2 font-medium">分期</th>
+                    <th className="px-3 py-2 font-medium">分期安排</th>
                     <th className="px-3 py-2 font-medium">狀態</th>
                     <th className="px-3 py-2 font-medium">驗證</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody>
                   {results.map((r, i) => {
                     const hours = r.assignment.isCombined
                       ? r.assignment.comTeachingHours
                       : r.assignment.teachingHours;
+                    const hasError = r.validationErrors.length > 0;
+                    const rowBg = hasError ? "bg-red-50" : i % 2 === 1 ? "bg-gray-50/50" : "";
                     return (
-                      <tr
-                        key={i}
-                        className={r.validationErrors.length > 0 ? "bg-red-50" : ""}
-                      >
-                        <td className="px-3 py-2">{r.teacher.displayName}</td>
-                        <td className="px-3 py-2">
-                          <span className="font-mono text-xs bg-gray-100 px-1 rounded">
-                            {r.assignment.subjectCode}
-                          </span>
-                          <span className="ml-1 text-gray-500">{r.rateRow.subjectName}</span>
-                        </td>
-                        <td className="px-3 py-2">{hours}</td>
-                        <td className="px-3 py-2">HK${r.hourlyRate.toFixed(0)}</td>
-                        <td className="px-3 py-2 font-medium">
-                          HK${r.totalSalary.toLocaleString()}
-                        </td>
-                        <td className="px-3 py-2">
-                          <span
-                            className="text-xs text-gray-600"
-                            title={INSTALMENT_PATTERN_DESCRIPTIONS[r.assignment.instalmentPattern]}
-                          >
-                            {INSTALMENT_PATTERN_LABELS[r.assignment.instalmentPattern]}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2">
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${
-                              r.assignment.status === "FINAL"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {r.assignment.status}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2">
-                          {r.validationErrors.length === 0 ? (
-                            <span className="text-green-600 text-xs">✓</span>
-                          ) : (
-                            <span
-                              className="text-red-600 text-xs cursor-help"
-                              title={r.validationErrors.join("\n")}
-                            >
-                              ✗ {r.validationErrors.length} 個錯誤
+                      <>
+                        <tr key={`row-${i}`} className={rowBg}>
+                          <td className="px-3 py-2 align-top">{r.teacher.displayName}</td>
+                          <td className="px-3 py-2 align-top">
+                            <span className="font-mono text-xs bg-gray-100 px-1 rounded">
+                              {r.assignment.subjectCode}
                             </span>
-                          )}
-                        </td>
-                      </tr>
+                            {r.rateRow.subjectName && (
+                              <span className="ml-1 text-gray-500 text-xs">{r.rateRow.subjectName}</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 align-top">{hours}</td>
+                          <td className="px-3 py-2 align-top">
+                            {r.hourlyRate > 0 ? `HK$${r.hourlyRate.toFixed(0)}` : "—"}
+                          </td>
+                          <td className="px-3 py-2 align-top font-semibold">
+                            HK${r.totalSalary.toLocaleString()}
+                          </td>
+                          <td className="px-3 py-2 align-top">
+                            <div className="text-xs text-gray-500 mb-1.5">
+                              {INSTALMENT_PATTERN_LABELS[r.assignment.instalmentPattern]}
+                            </div>
+                            {r.instalments.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {r.instalments.map((inst, j) => (
+                                  <div
+                                    key={j}
+                                    className="bg-blue-50 border border-blue-100 rounded px-2 py-1 text-xs text-center min-w-[72px]"
+                                  >
+                                    <div className="text-blue-500 font-medium leading-tight">
+                                      {inst.monthLabel.split(" ")[0].slice(0, 3)}{" "}
+                                      {inst.monthLabel.split(" ")[1]}
+                                    </div>
+                                    <div className="text-gray-700 font-semibold leading-tight">
+                                      HK${inst.amount.toLocaleString()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 align-top">
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                r.assignment.status === "FINAL"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {r.assignment.status}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 align-top">
+                            {hasError ? (
+                              <div className="text-red-600 text-xs space-y-0.5">
+                                {r.validationErrors.map((e, j) => (
+                                  <div key={j}>✗ {e}</div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-green-600 text-xs">✓</span>
+                            )}
+                          </td>
+                        </tr>
+                        {i < results.length - 1 && (
+                          <tr key={`divider-${i}`}>
+                            <td colSpan={8} className="h-px bg-gray-100 p-0" />
+                          </tr>
+                        )}
+                      </>
                     );
                   })}
                 </tbody>
